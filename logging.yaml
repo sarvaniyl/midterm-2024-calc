@@ -1,0 +1,53 @@
+version: 1
+disable_existing_loggers: False
+
+formatters:
+  simple:
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: simple
+    stream: ext://sys.stderr
+
+  file_info:
+    class: logging.handlers.RotatingFileHandler
+    level: INFO
+    formatter: simple
+    filename: ./logs/info.log
+    mode: a
+    maxBytes: 1048576  # 1MB
+    backupCount: 5
+    encoding: utf-8
+
+  file_warning:
+    class: logging.handlers.RotatingFileHandler
+    level: WARNING
+    formatter: simple
+    filename: ./logs/warning.log
+    mode: a
+    maxBytes: 1048576
+    backupCount: 5
+    encoding: utf-8
+
+  file_error:
+    class: logging.handlers.RotatingFileHandler
+    level: ERROR
+    formatter: simple
+    filename: ./logs/error.log
+    mode: a
+    maxBytes: 1048576
+    backupCount: 5
+    encoding: utf-8
+
+loggers:
+  my_logger:
+    level: DEBUG
+    handlers: [console, file_info, file_warning, file_error]
+    propagate: no
+
+root:
+  level: INFO
+  handlers: [console, file_info, file_warning, file_error]
