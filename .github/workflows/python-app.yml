@@ -12,22 +12,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
     - name: Set up Python 3.9
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: 3.9
+        python-version: "3.9"
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         pip install pytest pytest-cov pylint
-    - name: Lint with pylint
+
+    - name: Check file structure (Debugging Step)
+      run: |
+        echo "Project Structure:"
+        ls -R
+
+    - name: Run Pylint
       run: |
         pylint --disable=C0111,C0103,R0903,C0114,C0115,C0116,W0621,C0301,R0913,R0914,W0702 app tests || true
-    - name: Test with pytest
+
+    - name: Run Pytest
       run: |
-        pytest --cov=app tests/
-    - name: Check test coverage
-      run: |
-        python -m pytest --cov=app --cov-report=term-missing --cov-fail-under=90 tests/
+        if [ -d "tests" ]; then
+          python -m pytest --cov=app --cov-report=term-missing --cov-fail-under=90 tests/
+        else
+          echo "Error: 'tests/' directory not found"
+          exit 1
+        fi
