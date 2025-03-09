@@ -1,122 +1,67 @@
-"""
-Arithmetic command implementations for the calculator.
-"""
+# app/commands/arithmetic.py
 import logging
+from typing import List
+
 from app.commands.base import Command
-from app.calculator import Calculator
 
-__all__ = ['AddCommand', 'SubtractCommand', 'MultiplyCommand', 'DivideCommand']
-
-logger = logging.getLogger("calculator.commands.arithmetic")
+logger = logging.getLogger(__name__)
 
 class AddCommand(Command):
     """Command to add two numbers."""
-    def execute(self, *args) -> float:
-        """
-        Execute the add command.
-        
-        Args:
-            args: Should contain exactly two number arguments
-            
-        Returns:
-            The sum of the two numbers
-            
-        Raises:
-            ValueError: If the wrong number or type of arguments is provided
-        """
-        if len(args) != 2:
-            raise ValueError("Add command requires exactly 2 arguments")
-        try:
-            a, b = float(args[0]), float(args[1])
-            return Calculator().add(a, b)
-        except ValueError as e:
-            logger.error(f"Invalid arguments for add command: {args}")
-            raise ValueError(f"Invalid arguments for add command: {e}")
+    name = "add"
+    help = "Add two numbers (add <num1> <num2>)"
     
-    def get_help(self) -> str:
-        """Get the help text for the add command."""
-        return "add <a> <b> - Add two numbers"
+    def execute(self, *args) -> str:
+        if len(args) != 2:
+            return "Error: 'add' requires exactly two arguments"
+            
+        try:
+            result = self.calculator.calculate("add", *args)
+            return f"Result: {result}"
+        except ValueError as e:
+            return f"Error: {str(e)}"
 
 class SubtractCommand(Command):
-    """Command to subtract one number from another."""
-    def execute(self, *args) -> float:
-        """
-        Execute the subtract command.
-        
-        Args:
-            args: Should contain exactly two number arguments
-            
-        Returns:
-            The result of the subtraction
-            
-        Raises:
-            ValueError: If the wrong number or type of arguments is provided
-        """
-        if len(args) != 2:
-            raise ValueError("Subtract command requires exactly 2 arguments")
-        try:
-            a, b = float(args[0]), float(args[1])
-            return Calculator().subtract(a, b)
-        except ValueError as e:
-            logger.error(f"Invalid arguments for subtract command: {args}")
-            raise ValueError(f"Invalid arguments for subtract command: {e}")
+    """Command to subtract two numbers."""
+    name = "subtract"
+    help = "Subtract two numbers (subtract <num1> <num2>)"
     
-    def get_help(self) -> str:
-        """Get the help text for the subtract command."""
-        return "subtract <a> <b> - Subtract b from a"
+    def execute(self, *args) -> str:
+        if len(args) != 2:
+            return "Error: 'subtract' requires exactly two arguments"
+            
+        try:
+            result = self.calculator.calculate("subtract", *args)
+            return f"Result: {result}"
+        except ValueError as e:
+            return f"Error: {str(e)}"
 
 class MultiplyCommand(Command):
     """Command to multiply two numbers."""
-    def execute(self, *args) -> float:
-        """
-        Execute the multiply command.
-        
-        Args:
-            args: Should contain exactly two number arguments
-            
-        Returns:
-            The product of the two numbers
-            
-        Raises:
-            ValueError: If the wrong number or type of arguments is provided
-        """
-        if len(args) != 2:
-            raise ValueError("Multiply command requires exactly 2 arguments")
-        try:
-            a, b = float(args[0]), float(args[1])
-            return Calculator().multiply(a, b)
-        except ValueError as e:
-            logger.error(f"Invalid arguments for multiply command: {args}")
-            raise ValueError(f"Invalid arguments for multiply command: {e}")
+    name = "multiply"
+    help = "Multiply two numbers (multiply <num1> <num2>)"
     
-    def get_help(self) -> str:
-        """Get the help text for the multiply command."""
-        return "multiply <a> <b> - Multiply two numbers"
+    def execute(self, *args) -> str:
+        if len(args) != 2:
+            return "Error: 'multiply' requires exactly two arguments"
+            
+        try:
+            result = self.calculator.calculate("multiply", *args)
+            return f"Result: {result}"
+        except ValueError as e:
+            return f"Error: {str(e)}"
 
 class DivideCommand(Command):
-    """Command to divide one number by another."""
-    def execute(self, *args) -> float:
-        """
-        Execute the divide command.
-        
-        Args:
-            args: Should contain exactly two number arguments
-            
-        Returns:
-            The result of the division
-            
-        Raises:
-            ValueError: If the wrong number or type of arguments is provided or if division by zero
-        """
-        if len(args) != 2:
-            raise ValueError("Divide command requires exactly 2 arguments")
-        try:
-            a, b = float(args[0]), float(args[1])
-            return Calculator().divide(a, b)
-        except (ValueError, ZeroDivisionError) as e:
-            logger.error(f"Invalid arguments for divide command: {args}")
-            raise ValueError(f"Invalid arguments for divide command: {e}")
+    """Command to divide two numbers."""
+    name = "divide"
+    help = "Divide two numbers (divide <num1> <num2>)"
     
-    def get_help(self) -> str:
-        """Get the help text for the divide command."""
-        return "divide <a> <b> - Divide a by b"
+    def execute(self, *args) -> str:
+        if len(args) != 2:
+            return "Error: 'divide' requires exactly two arguments"
+            
+        try:
+            result = self.calculator.calculate("divide", *args)
+            return f"Result: {result}"
+        except ValueError as e:
+            return f"Error: {str(e)}"

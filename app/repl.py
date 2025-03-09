@@ -5,7 +5,7 @@ from typing import Dict, Optional, Type
 from app.calculator import Calculator
 from app.commands.arithmetic import AddCommand, SubtractCommand, MultiplyCommand, DivideCommand
 from app.commands.base import Command
-from app.commands.history import HistoryCommand, ClearCommand, DeleteCommand
+from app.commands.history import HistoryCommand, ClearHistoryCommand, DeleteCommand
 from app.commands.system import ExitCommand, HelpCommand
 from app.plugins.plugin_loader import PluginLoader
 
@@ -36,7 +36,7 @@ class REPL:
             
             # History commands
             'history': HistoryCommand,
-            'clear': ClearCommand,
+            'clear': ClearHistoryCommand,
             'delete': DeleteCommand,
             
             # System commands
@@ -58,6 +58,7 @@ class REPL:
         self._commands.update(plugin_commands)
         logger.info(f"Loaded {len(plugin_commands)} commands from plugins")
     
+    # Modify this method in app/repl.py
     def get_command(self, command_name: str) -> Optional[Command]:
         """
         Get a command by name.
@@ -70,9 +71,9 @@ class REPL:
         """
         command_class = self._commands.get(command_name.lower())
         if command_class:
+            # Create a new instance of the command with the calculator
             return command_class(self.calculator)
         return None
-    
     def get_command_list(self):
         """Get a list of all available command names."""
         return sorted(self._commands.keys())
