@@ -8,11 +8,14 @@ from app.commands.base import Command
 from app.history_manager import HistoryManager
 
 logger = logging.getLogger(__name__)
+from pathlib import Path
+cwd = Path.cwd()
+dir = os.path.dirname(__file__)
 
 class ExportCSVCommand(Command):
     """Command to export calculation history to a CSV file."""
     name = "export_csv"
-    help = "Export calculation history to a CSV file"
+    help = "Export calculation history to a CSV file (export_csv <filename>)"
     
     def execute(self, *args) -> str:
         if not args:
@@ -21,6 +24,11 @@ class ExportCSVCommand(Command):
         filename = args[0]
         if not filename.endswith('.csv'):
             filename += '.csv'
+        
+        # Construct path to ../plugins/data directory
+        #data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'plugins', 'data')
+        data_dir = os.path.join(dir,"..", "Data")
+        filename = os.path.join(data_dir, filename)
             
         history_manager = HistoryManager()
         history = history_manager.get_history()
@@ -29,10 +37,9 @@ class ExportCSVCommand(Command):
             return "No history to export"
         
         try:
-            # Create directory if it doesn't exist
-            directory = os.path.dirname(filename)
-            if directory and not os.path.exists(directory):
-                os.makedirs(directory)
+            # Create data directory if it doesn't exist
+            if not os.path.exists(data_dir):
+                os.makedirs(data_dir)
                 
             history.to_csv(filename, index=False)
             logger.info(f"Exported history to {filename}")
@@ -45,13 +52,15 @@ class ExportCSVCommand(Command):
 class ImportCSVCommand(Command):
     """Command to import calculation history from a CSV file."""
     name = "import_csv"
-    help = "Import calculation history from a CSV file"
+    help = "Import calculation history from a CSV file (import_csv <filename>)"
     
     def execute(self, *args) -> str:
         if not args:
             return "Error: Please provide a filename to import"
         
         filename = args[0]
+        data_dir = os.path.join(dir,"..", "Data")
+        filename = os.path.join(data_dir, filename)
         
         if not os.path.exists(filename):
             return f"Error: File {filename} does not exist"
