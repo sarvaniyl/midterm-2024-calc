@@ -42,11 +42,11 @@ class HelpCommand(Command):
         """Get the help text for the help command."""
         return "help - Display this help message"
 
-class QuitCommand(Command):
+class ExitCommand(Command):
     """Command to exit the calculator."""
     def execute(self, *args) -> None:
         """
-        Execute the quit command.
+        Execute the exit command.
         
         This will exit the program.
         """

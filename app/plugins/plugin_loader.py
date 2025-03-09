@@ -1,61 +1,91 @@
-"""
-Plugin loader for the calculator application.
-"""
-import os
+# app/plugins/plugin_loader.py
+import importlib
+import inspect
 import logging
-import importlib.util
-from pathlib import Path
-from typing import Dict, Any
+import os
+import pkgutil
+from typing import Dict, List, Type
 
-logger = logging.getLogger("calculator.plugins")
+from app.commands.base import Command
+
+logger = logging.getLogger(__name__)
 
 class PluginLoader:
     """
-    Loads and manages plugins for the calculator application.
+    A class that dynamically loads plugins from specified directories.
+    This class follows the Singleton pattern to ensure only one instance exists.
     """
-    def __init__(self):
-        """
-        Initialize the plugin loader with a plugin directory from environment variables.
-        """
-        self.plugin_dir = os.environ.get("PLUGIN_DIR", "app/plugins")
-        self.plugins = {}
-        logger.info(f"Plugin loader initialized with directory: {self.plugin_dir}")
+    _instance = None
     
-    def load_plugins(self) -> Dict[str, Any]:
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(PluginLoader, cls).__new__(cls)
+            cls._instance.plugins = {}
+            cls._instance.commands = {}
+        return cls._instance
+    
+    def load_plugins(self, package_name: str = "app.plugins") -> Dict[str, object]:
         """
-        Load plugins from the plugin directory and its subdirectories.
+        Dynamically loads all plugins from the specified package.
+        
+        Args:
+            package_name: The package name to search for plugins
+            
+        Returns:
+            A dictionary of loaded plugins
+        """
+        logger.info(f"Loading plugins from {package_name}")
+        
+        package = importlib.import_module(package_name)
+        
+        for _, name, is_pkg in pkgutil.iter_modules(package.__path__, package.__name__ + '.'):
+            if is_pkg and not name.endswith('__pycache__'):
+                try:
+                    # Import the module
+                    module = importlib.import_module(name)
+                    logger.debug(f"Loaded module: {name}")
+                    
+                    # Look for command classes in the module
+                    self._register_commands_from_module(module)
+                    
+                except Exception as e:
+                    logger.error(f"Failed to load plugin {name}: {str(e)}")
+        
+        logger.info(f"Loaded {len(self.commands)} commands from plugins")
+        return self.commands
+    
+    def _register_commands_from_module(self, module):
+        """
+        Register all Command subclasses from a module.
+        
+        Args:
+            module: The module to search for Command subclasses
+        """
+        for _, obj in inspect.getmembers(module, inspect.isclass):
+            # Check if the class is a subclass of Command but not Command itself
+            if issubclass(obj, Command) and obj is not Command:
+                # Get the command name from the class
+                command_name = getattr(obj, 'name', obj.__name__.lower())
+                logger.debug(f"Registering command: {command_name}")
+                self.commands[command_name] = obj
+                
+    def get_command_list(self) -> List[str]:
+        """
+        Returns a list of all available command names.
         
         Returns:
-            Dictionary mapping command names to command objects
+            A list of command names
         """
-        plugin_commands = {}
-        plugin_dir_path = Path(self.plugin_dir)
+        return sorted(self.commands.keys())
+    
+    def get_command(self, command_name: str) -> Type[Command]:
+        """
+        Get a command class by name.
         
-        if not plugin_dir_path.exists():
-            logger.info(f"Creating plugin directory: {self.plugin_dir}")
-            plugin_dir_path.mkdir(parents=True, exist_ok=True)
-            return plugin_commands
-        
-        # Find all plugin modules in plugin directory and subdirectories
-        plugin_files = []
-        for subdir in [d for d in plugin_dir_path.iterdir() if d.is_dir() and not d.name.startswith("__")]:
-            plugin_files.extend(subdir.glob("*_plugin.py"))
-        
-        for plugin_file in plugin_files:
-            try:
-                logger.info(f"Loading plugin: {plugin_file}")
-                module_name = f"app.plugins.{plugin_file.parent.name}.{plugin_file.stem}"
-                spec = importlib.util.spec_from_file_location(module_name, plugin_file)
-                plugin_module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(plugin_module)
-                
-                if hasattr(plugin_module, "register_commands"):
-                    new_commands = plugin_module.register_commands()
-                    plugin_commands.update(new_commands)
-                    logger.info(f"Registered commands from plugin {plugin_file.stem}: {list(new_commands.keys())}")
-                else:
-                    logger.warning(f"Plugin {plugin_file} does not have a register_commands function")
-            except Exception as e:
-                logger.error(f"Error loading plugin {plugin_file}: {str(e)}")
-        
-        return plugin_commands
+        Args:
+            command_name: The name of the command to get
+            
+        Returns:
+            The command class if found, otherwise None
+        """
+        return self.commands.get(command_name.lower())
