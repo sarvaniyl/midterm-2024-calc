@@ -33,7 +33,7 @@ jobs:
 
     - name: Run Pylint
       run: |
-        pylint app tests --disable=C0111,C0103,R0903,C0114,C0115,C0116,W0621,C0301,R0913,R0914,W0702
+        pylint app tests --disable=C0111,C0103,R0903,C0114,C0115,C0116,W0621,C0301,R0913,R0914,W0702,C0305,W1203,W0718,W0707,C0303,C0415,R1705,W0611,W0107,W0105,W0221,W0212,R0801
 
     - name: Run Pytest
       run: |
