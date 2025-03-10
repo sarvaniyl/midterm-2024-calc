@@ -1,4 +1,6 @@
-# app/calculator.py
+"""
+Calculator module that provides basic arithmetic operations and calculation history management.
+"""
 import logging
 import operator
 from typing import Any, Dict, Callable
@@ -13,12 +15,11 @@ class Calculator:
     This class implements the Facade pattern to provide a simplified interface
     for performing calculations and managing history.
     """
-    
     def __init__(self):
         self.history_manager = HistoryManager()
         self.operations = self._register_operations()
         logger.info("Calculator initialized")
-        
+    
     def _register_operations(self) -> Dict[str, Callable]:
         """Register basic operations."""
         return {
@@ -43,15 +44,15 @@ class Calculator:
             ValueError: If the operation is invalid or the arguments are invalid
         """
         if operation not in self.operations:
-            logger.error(f"Invalid operation: {operation}")
+            logger.error("Invalid operation: %s", operation)
             raise ValueError(f"Invalid operation: {operation}")
         
         # Convert arguments to numbers
         try:
             numeric_args = [float(arg) for arg in args]
-        except ValueError:
-            logger.error(f"Invalid arguments for {operation}: {args}")
-            raise ValueError(f"Invalid arguments for {operation}: {args}")
+        except ValueError as exc:
+            logger.error("Invalid arguments for %s: %s", operation, args)
+            raise ValueError(f"Invalid arguments for {operation}: {args}") from exc
         
         # Check for division by zero
         if operation == 'divide' and numeric_args[1] == 0:
@@ -64,21 +65,23 @@ class Calculator:
             if len(numeric_args) == 2:
                 result = self.operations[operation](numeric_args[0], numeric_args[1])
             else:
-                logger.error(f"Invalid number of arguments for {operation}: {len(numeric_args)}")
-                raise ValueError(f"Invalid number of arguments for {operation}: expected 2, got {len(numeric_args)}")
-                
+                logger.error("Invalid number of arguments for %s: %d", operation, len(numeric_args))
+                raise ValueError(
+                    f"Invalid number of arguments for {operation}: expected 2, got {len(numeric_args)}"
+                )
+            
             # Format the expression
             expression = self._format_expression(operation, numeric_args)
             
             # Add to history
             self.history_manager.add_entry(operation, expression, result)
             
-            logger.info(f"Calculated: {expression} = {result}")
+            logger.info("Calculated: %s = %s", expression, result)
             return result
             
         except Exception as e:
-            logger.error(f"Error in calculation: {str(e)}")
-            raise ValueError(f"Error in calculation: {str(e)}")
+            logger.error("Error in calculation: %s", str(e))
+            raise ValueError(f"Error in calculation: {str(e)}") from e
     
     def _format_expression(self, operation: str, args) -> str:
         """

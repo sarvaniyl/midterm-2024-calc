@@ -1,9 +1,14 @@
-# app/plugins/plugin_loader.py
+"""
+Plugin loader module for dynamically loading and managing plugins and commands.
+This module provides functionality to discover, load, and manage plugins and commands
+from specified package directories.
+"""
+
 import importlib
 import inspect
 import logging
 import pkgutil
-from typing import Dict, List, Type, Callable, Any
+from typing import Dict, List, Type, Callable
 
 from app.commands.base import Command
 
@@ -15,13 +20,20 @@ class PluginLoader:
     This class follows the Singleton pattern to ensure only one instance exists.
     """
     _instance = None
+    plugins: Dict[str, Callable] = {}
+    commands: Dict[str, Type[Command]] = {}
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(PluginLoader, cls).__new__(cls)
-            cls._instance.plugins = {}
-            cls._instance.commands = {}
+            # Initialize instance attributes here
+            cls._instance._initialize()
         return cls._instance
+
+    def _initialize(self):
+        """Initialize instance attributes."""
+        self.plugins = {}
+        self.commands = {}
 
     def load_plugins(self, package_name: str = "app.plugins") -> Dict[str, object]:
         """
