@@ -9,8 +9,7 @@ from app.commands.history import HistoryCommand, ClearHistoryCommand, DeleteComm
 from app.commands.system import ExitCommand, HelpCommand
 from app.plugins.csv.csv_plugin import ImportCSVCommand, ExportCSVCommand
 from app.plugins.plugin_loader import PluginLoader
-from app.plugins.greet.greeting_plugin import GreetCommand
-from app.plugins.greet.greeting_plugin import HelpPluginCommand
+
 
 logger = logging.getLogger(__name__)
 
@@ -49,8 +48,7 @@ class REPL:
             
             "export_csv": ExportCSVCommand,
             "import_csv": ImportCSVCommand,
-            "greet": GreetCommand,
-            "help_plugin": HelpPluginCommand
+
 
         }
         
