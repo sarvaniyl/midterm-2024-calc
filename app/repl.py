@@ -1,8 +1,5 @@
-# app/repl.py
 import logging
 from typing import Dict, Optional, Type
-import os
-from dotenv import load_dotenv
 from app.calculator import Calculator
 from app.commands.arithmetic import AddCommand, SubtractCommand, MultiplyCommand, DivideCommand
 from app.commands.base import Command
@@ -10,6 +7,7 @@ from app.commands.history import HistoryCommand, ClearHistoryCommand, DeleteComm
 from app.commands.system import ExitCommand, HelpCommand
 from app.plugins.csv.csv_plugin import ImportCSVCommand, ExportCSVCommand
 from app.plugins.plugin_loader import PluginLoader
+
 
 logger = logging.getLogger(__name__)
 
@@ -23,11 +21,17 @@ class REPL:
     def __init__(self):
         self.calculator = Calculator()
         self.running = False
-        self._commands = self._register_builtin_commands()
-        self._load_plugin_commands()
-        logger.info("REPL initialized")
         
-    def _register_builtin_commands(self) -> Dict[str, Type[Command]]:
+        # Important: Make sure we're using the plugin manager instance that has plugins registered
+        # We'll try to import the pre-configured instance first
+
+        # Register all commands
+        self._commands = self._register_commands()
+        
+        # Print registered commands for debugging
+        logger.info(f"REPL initialized with commands: {', '.join(self._commands.keys())}")
+     
+    def _register_commands(self) -> Dict[str, Type[Command]]:
         """Register built-in commands."""
         commands = {
             # Arithmetic commands
@@ -48,23 +52,23 @@ class REPL:
             
             "export_csv": ExportCSVCommand,
             "import_csv": ImportCSVCommand,
-
-
         }
         
-        logger.debug(f"Registered {len(commands)} built-in commands")
-        return commands
-    
-    def _load_plugin_commands(self):
-        """Load commands from plugins."""
+        # Load plugin commands
         plugin_loader = PluginLoader()
         plugin_commands = plugin_loader.load_plugins()
+        commands.update(plugin_commands)
         
-        # Update commands with plugin commands
-        self._commands.update(plugin_commands)
-        logger.info(f"Loaded {len(plugin_commands)} commands from plugins")
-    
-    # Modify this method in app/repl.py
+        return commands
+        
+
+            
+
+    def refresh_commands(self):
+        """Refresh commands to include any newly registered plugins."""
+        self._commands = self._register_commands()
+        logger.info(f"Commands refreshed. Total commands: {len(self._commands)}")
+
     def get_command(self, command_name: str) -> Optional[Command]:
         """
         Get a command by name.
@@ -80,6 +84,7 @@ class REPL:
             # Create a new instance of the command with the calculator
             return command_class(self.calculator)
         return None
+
     def get_command_list(self):
         """Get a list of all available command names."""
         return sorted(self._commands.keys())
@@ -108,10 +113,29 @@ class REPL:
         print("Advanced Calculator")
         print("Type 'help' for a list of commands, 'exit' to quit")
         
+        # Print available commands at startup for debugging
+        print(f"Available commands: {', '.join(self.get_command_list())}")
+        
         while self.running:
             try:
                 # Read
                 user_input = input("> ")
+                
+                # Special case for dynamic plugin registration while running
+                if user_input.startswith("!register "):
+                    parts = user_input.split(maxsplit=2)
+                    if len(parts) == 3:
+                        _, cmd_name, cmd_expr = parts
+                        try:
+                            # Create a lambda function from the expression
+                            # Warning: eval is used here for demonstration
+                            func = eval(f"lambda x: {cmd_expr}")
+                            self.plugin_manager.register_plugin(cmd_name, func)
+                            self.refresh_commands()
+                            print(f"Registered new command: {cmd_name}")
+                        except Exception as e:
+                            print(f"Error registering command: {str(e)}")
+                    continue
                 
                 # Parse
                 command_name, args = self.parse_input(user_input)

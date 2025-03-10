@@ -3,7 +3,7 @@ import importlib
 import inspect
 import logging
 import pkgutil
-from typing import Dict, List, Type
+from typing import Dict, List, Type, Callable, Any
 
 from app.commands.base import Command
 
@@ -16,14 +16,13 @@ class PluginLoader:
     """
     _instance = None
 
-    def __init__(self):
-        self.plugins = {}
-        self.commands = {}
-
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(PluginLoader, cls).__new__(cls)
+            cls._instance.plugins = {}
+            cls._instance.commands = {}
         return cls._instance
+
     def load_plugins(self, package_name: str = "app.plugins") -> Dict[str, object]:
         """
         Dynamically loads all plugins from the specified package.
@@ -68,7 +67,20 @@ class PluginLoader:
                 command_name = getattr(obj, 'name', obj.__name__.lower())
                 logger.debug("Registering command: %s", command_name)
                 self.commands[command_name] = obj
-                # Get the command name from the class
+
+    def register_plugin(self, name: str, plugin_func: Callable) -> None:
+        """
+        Register a function-based plugin.
+
+        Args:
+            name: The name of the plugin
+            plugin_func: The plugin function
+        """
+        logger.debug("Registering function plugin: %s", name)
+        self.plugins[name] = plugin_func
+        # Also add to commands for unified access
+        self.commands[name] = plugin_func
+
     def get_command_list(self) -> List[str]:
         """
         Returns a list of all available command names.
@@ -89,3 +101,15 @@ class PluginLoader:
             The command class if found, otherwise None
         """
         return self.commands.get(command_name.lower())
+
+    def get_plugin(self, plugin_name: str) -> Callable:
+        """
+        Get a plugin function by name.
+
+        Args:
+            plugin_name: The name of the plugin to get
+
+        Returns:
+            The plugin function if found, otherwise None
+        """
+        return self.plugins.get(plugin_name.lower())
