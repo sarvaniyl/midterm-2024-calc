@@ -3,7 +3,8 @@ import pytest
 from app.repl import REPL
 from app.calculator import Calculator
 from app.commands.arithmetic import AddCommand, SubtractCommand, MultiplyCommand, DivideCommand
-
+from app.history_manager import HistoryManager
+import pandas as pd
 
 @pytest.fixture(name='repl')
 def fixture_repl():
@@ -109,3 +110,67 @@ def test_parse_input_none(repl):
     """Test that parsing None input raises AttributeError."""
     with pytest.raises(AttributeError):
         repl.parse_input(None)
+@pytest.fixture(name='history_manager')
+def fixture_history_manager():
+    """Fixture that provides a fresh instance of HistoryManager for testing."""
+    HistoryManager._instance = None  # Reset singleton instance before each test
+    return HistoryManager()
+
+
+def test_history_manager_initialization(history_manager):
+    """Test that HistoryManager initializes with an empty history DataFrame."""
+    assert isinstance(history_manager._history, pd.DataFrame)
+    assert history_manager._history.empty
+    assert list(history_manager._history.columns) == ['operation', 'expression', 'result']
+
+
+def test_add_entry(history_manager):
+    """Test adding an entry to history."""
+    history_manager.add_entry('add', '2 + 3', 5)
+    assert len(history_manager._history) == 1
+    assert history_manager._history.iloc[0].to_dict() == {
+        'operation': 'add', 'expression': '2 + 3', 'result': '5'
+    }
+
+
+def test_get_history(history_manager):
+    """Test retrieving the history DataFrame."""
+    history_manager.add_entry('subtract', '10 - 5', 5)
+    history_df = history_manager.get_history()
+    assert isinstance(history_df, pd.DataFrame)
+    assert len(history_df) == 1
+    assert history_df.iloc[0]['operation'] == 'subtract'
+
+
+def test_delete_entry(history_manager):
+    """Test deleting an entry from history."""
+    history_manager.add_entry('multiply', '2 * 3', 6)
+    assert len(history_manager._history) == 1
+    assert history_manager.delete_entry(0) is True
+    assert len(history_manager._history) == 0
+    assert history_manager.delete_entry(0) is False  # Deleting non-existent entry
+
+
+def test_clear_history(history_manager):
+    """Test clearing the history."""
+    history_manager.add_entry('divide', '10 / 2', 5)
+    history_manager.clear_history()
+    assert history_manager._history.empty
+
+
+def test_save_and_load_history(history_manager, tmp_path):
+    """Test saving and loading history from a CSV file."""
+    file_path = tmp_path / 'history.csv'
+    history_manager.add_entry('power', '2 ** 3', 8)
+    assert history_manager.save_history(str(file_path)) is True
+    
+    new_history_manager = HistoryManager()
+    assert new_history_manager.load_history(str(file_path)) is True
+    assert len(new_history_manager._history) == 1
+    assert new_history_manager._history.iloc[0]['operation'] == 'power'
+
+
+def test_invalid_load_history(history_manager, tmp_path):
+    """Test loading a non-existent or invalid history file."""
+    file_path = tmp_path / 'non_existent.csv'
+    assert history_manager.load_history(str(file_path)) is False
