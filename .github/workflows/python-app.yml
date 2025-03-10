@@ -33,12 +33,12 @@ jobs:
 
     - name: Run Pylint
       run: |
-        pylint --disable=C0111,C0103,R0903,C0114,C0115,C0116,W0621,C0301,R0913,R0914,W0702 app tests || true
+        pylint app tests --disable=C0111,C0103,R0903,C0114,C0115,C0116,W0621,C0301,R0913,R0914,W0702
 
     - name: Run Pytest
       run: |
         if [ -d "tests" ]; then
-          python -m pytest --cov=app --cov-report=term-missing --cov-fail-under=40 tests/
+          python -m pytest --cov=app --cov-report=term-missing --cov-fail-under=60 tests/
         else
           echo "Error: 'tests/' directory not found"
           exit 1

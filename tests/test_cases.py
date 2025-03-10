@@ -52,6 +52,15 @@ def test_parse_input_with_command_and_args(repl):
     command_name, args = repl.parse_input("add 5 3")
     assert command_name == "add"
     assert args == ["5", "3"]
+    command_name, args = repl.parse_input("subtract 5 3")
+    assert command_name == "subtract"
+    assert args == ["5", "3"]    
+    command_name, args = repl.parse_input("multiply 5 3")
+    assert command_name == "multiply"
+    assert args == ["5", "3"]       
+    command_name, args = repl.parse_input("divide 5 3")
+    assert command_name == "divide"
+    assert args == ["5", "3"]
 
 
 def test_parse_input_with_empty_input(repl):
