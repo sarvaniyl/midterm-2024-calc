@@ -119,24 +119,7 @@ class REPL:
         while self.running:
             try:
                 # Read
-                user_input = input("> ")
-                
-                # Special case for dynamic plugin registration while running
-                if user_input.startswith("!register "):
-                    parts = user_input.split(maxsplit=2)
-                    if len(parts) == 3:
-                        _, cmd_name, cmd_expr = parts
-                        try:
-                            # Create a lambda function from the expression
-                            # Warning: eval is used here for demonstration
-                            func = eval(f"lambda x: {cmd_expr}")
-                            self.plugin_manager.register_plugin(cmd_name, func)
-                            self.refresh_commands()
-                            print(f"Registered new command: {cmd_name}")
-                        except Exception as e:
-                            print(f"Error registering command: {str(e)}")
-                    continue
-                
+                user_input = input("> ")          
                 # Parse
                 command_name, args = self.parse_input(user_input)
                 if not command_name:
