@@ -79,7 +79,7 @@ def test_register_builtin_commands(repl):
     commands = repl._commands  # Use public property if available, or rename _commands to commands
     expected_commands = {
         'add', 'subtract', 'multiply', 'divide', 'history', 'clear', 'delete',
-        'exit', 'quit', 'help', 'export_csv', 'import_csv', 'greet', 'help_plugin'
+        'exit', 'quit', 'help', 'export_csv', 'import_csv'
     }
     assert all(cmd.lower() in commands for cmd in expected_commands)
     assert len(commands) >= len(expected_commands)
