@@ -1,30 +1,56 @@
 # main.py
 import logging
+import logging.config
 import os
-import sys
 import yaml
 from dotenv import load_dotenv
-
 from app.repl import REPL
 from app.plugins.plugin_loader import PluginLoader
+import re
+
+
+def expand_env_vars(config):
+    """Recursively expand environment variables in the logging config."""
+    if isinstance(config, dict):
+        return {key: expand_env_vars(value) for key, value in config.items()}
+    elif isinstance(config, list):
+        return [expand_env_vars(item) for item in config]
+    elif isinstance(config, str):
+        # Replace ${VAR} with os.getenv(VAR, VAR) to use defaults if not set
+        return re.sub(r"\$\{(\w+)\}", lambda match: os.getenv(match.group(1), match.group(0)), config)
+    else:
+        return config
+
 def configure_logging():
-    """Configure logging using YAML configuration."""
-    import yaml
+    """Configure logging using YAML configuration with expanded environment variables."""
     
-    # Create logs directory if it doesn't exist
+    # Load environment variables
+    load_dotenv()
+
+    # Ensure logs directory exists
     if not os.path.exists('logs'):
         os.makedirs('logs')
-    
-    # Load logging configuration
+
+    # Load and expand environment variables in YAML config
     with open('logging.yaml', 'r') as f:
         config = yaml.safe_load(f)
-        
-    # Configure logging using the YAML configuration
-    import logging.config
+        config = expand_env_vars(config)  # Expand environment variables
+
+    # Convert numeric values explicitly
+    for handler in config.get("handlers", {}).values():
+        if "maxBytes" in handler:
+            handler["maxBytes"] = int(handler["maxBytes"])
+        if "backupCount" in handler:
+            handler["backupCount"] = int(handler["backupCount"])
+
+    # Configure logging
     logging.config.dictConfig(config)
-    
-    logging.info("Logging configured from YAML file")
-        
+
+    logger = logging.getLogger(__name__)
+    logger.info("Logging configured from YAML file")
+
+# Call the function to configure logging
+configure_logging()
 
 def main():
     """Main entry point for the calculator application."""

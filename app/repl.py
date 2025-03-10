@@ -1,7 +1,8 @@
 # app/repl.py
 import logging
 from typing import Dict, Optional, Type
-
+import os
+from dotenv import load_dotenv
 from app.calculator import Calculator
 from app.commands.arithmetic import AddCommand, SubtractCommand, MultiplyCommand, DivideCommand
 from app.commands.base import Command
@@ -9,7 +10,6 @@ from app.commands.history import HistoryCommand, ClearHistoryCommand, DeleteComm
 from app.commands.system import ExitCommand, HelpCommand
 from app.plugins.csv.csv_plugin import ImportCSVCommand, ExportCSVCommand
 from app.plugins.plugin_loader import PluginLoader
-
 
 logger = logging.getLogger(__name__)
 

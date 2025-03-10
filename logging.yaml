@@ -14,32 +14,32 @@ handlers:
 
   file_info:
     class: logging.handlers.RotatingFileHandler
-    level: INFO
+    level: ${LOG_LEVEL}
     formatter: simple
-    filename: ./logs/info.log
+    filename: ${LOG_FILE_INFO}
     mode: a
-    maxBytes: 1048576  # 1MB
-    backupCount: 5
+    maxBytes: ${LOG_MAX_BYTES}
+    backupCount: ${LOG_BACKUP_COUNT}
     encoding: utf-8
 
   file_warning:
     class: logging.handlers.RotatingFileHandler
     level: WARNING
     formatter: simple
-    filename: ./logs/warning.log
+    filename: ${LOG_FILE_WARNING}
     mode: a
-    maxBytes: 1048576
-    backupCount: 5
+    maxBytes: ${LOG_MAX_BYTES}
+    backupCount: ${LOG_BACKUP_COUNT}
     encoding: utf-8
 
   file_error:
     class: logging.handlers.RotatingFileHandler
     level: ERROR
     formatter: simple
-    filename: ./logs/error.log
+    filename: ${LOG_FILE_ERROR}
     mode: a
-    maxBytes: 1048576
-    backupCount: 5
+    maxBytes: ${LOG_MAX_BYTES}
+    backupCount: ${LOG_BACKUP_COUNT}
     encoding: utf-8
 
 loggers:
