@@ -1,11 +1,7 @@
 import pytest
-from unittest.mock import patch, MagicMock
 from app.repl import REPL
 from app.calculator import Calculator
 from app.commands.arithmetic import AddCommand, SubtractCommand, MultiplyCommand, DivideCommand
-from app.commands.history import HistoryCommand, ClearHistoryCommand, DeleteCommand
-from app.commands.system import ExitCommand, HelpCommand
-from app.commands.base import Command
 
 
 @pytest.fixture
@@ -17,7 +13,7 @@ def repl():
 def test_repl_initialization(repl):
     assert isinstance(repl.calculator, Calculator)
     assert repl.running is False
-    assert len(repl._commands) > 0
+    assert len(repl.get_command_list()) > 0
 
 
 def test_get_command_returns_valid_command(repl):
@@ -37,12 +33,6 @@ def test_get_command_list_returns_sorted_commands(repl):
     assert sorted(commands) == commands
 
 
-def test_parse_input_with_command_and_args(repl):
-    command_name, args = repl.parse_input('add 5 3')
-    assert command_name == 'add'
-    assert args == ['5', '3']
-    
-    
 def test_parse_input_with_command_and_args(repl):
     command_name, args = repl.parse_input('add 5 3')
     assert command_name == 'add'
@@ -75,13 +65,12 @@ def test_stop_repl(repl):
 
 def test_register_builtin_commands(repl):
     commands = repl._commands
-    expected_commands = [
+    expected_commands = {
         'add', 'subtract', 'multiply', 'divide', 'history', 'clear', 'delete',
         'exit', 'quit', 'help', 'export_csv', 'import_csv', 'greet', 'help_plugin'
-    ]
-    for cmd in expected_commands:
-        assert cmd in commands
-
+    }
+    assert all(cmd.lower() in commands for cmd in expected_commands)
+    assert len(commands) >= len(expected_commands)
 
 def test_get_command_case_insensitivity(repl):
     assert isinstance(repl.get_command('ADD'), AddCommand)
@@ -108,4 +97,6 @@ def test_parse_input_non_string_input(repl):
 
 
 
-
+def test_parse_input_non_string_input(repl):
+    with pytest.raises(AttributeError):
+        repl.parse_input(None)  # Should raise an error because NoneType has no `.split()`
