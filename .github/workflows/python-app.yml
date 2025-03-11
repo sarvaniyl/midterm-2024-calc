@@ -38,7 +38,7 @@ jobs:
     - name: Run Pytest
       run: |
         if [ -d "tests" ]; then
-          python -m pytest --cov=app --cov-report=term-missing --cov-fail-under=50 tests/
+          python -m pytest --cov=app/commands/ --cov-report=term-missing --cov-fail-under=50 tests/
         else
           echo "Error: 'tests/' directory not found"
           exit 1

@@ -210,3 +210,73 @@ def test_invalid_load_history(history_manager, tmp_path):
     """Test loading a non-existent or invalid history file."""
     file_path = tmp_path / "non_existent.csv"
     assert history_manager.load_history(str(file_path)) is False
+    
+@pytest.fixture
+def calculator():
+    class MockCalculator:
+        def calculate(self, operation, *args):
+            if operation == "add":
+                return float(args[0]) + float(args[1])
+            elif operation == "subtract":
+                return float(args[0]) - float(args[1])
+            elif operation == "multiply":
+                return float(args[0]) * float(args[1])
+            elif operation == "divide":
+                if float(args[1]) == 0:
+                    raise ValueError("Cannot divide by zero")
+                return float(args[0]) / float(args[1])
+            else:
+                raise ValueError("Invalid operation")
+    
+    return MockCalculator()
+
+@pytest.fixture
+def add_command(calculator):
+    cmd = AddCommand()
+    cmd.calculator = calculator
+    return cmd
+
+@pytest.fixture
+def subtract_command(calculator):
+    cmd = SubtractCommand()
+    cmd.calculator = calculator
+    return cmd
+
+@pytest.fixture
+def multiply_command(calculator):
+    cmd = MultiplyCommand()
+    cmd.calculator = calculator
+    return cmd
+
+@pytest.fixture
+def divide_command(calculator):
+    cmd = DivideCommand()
+    cmd.calculator = calculator
+    return cmd
+
+
+def test_add_command_valid(add_command):
+    assert add_command.execute("5", "3") == "Result: 8.0"
+
+def test_add_command_invalid_args(add_command):
+    assert add_command.execute("5") == "Error: 'add' requires exactly two arguments"
+    assert add_command.execute("5", "a") == "Error: could not convert string to float: 'a'"
+
+def test_subtract_command_valid(subtract_command):
+    assert subtract_command.execute("5", "3") == "Result: 2.0"
+
+def test_subtract_command_invalid_args(subtract_command):
+    assert subtract_command.execute("5") == "Error: 'subtract' requires exactly two arguments"
+
+def test_multiply_command_valid(multiply_command):
+    assert multiply_command.execute("5", "3") == "Result: 15.0"
+
+def test_multiply_command_invalid_args(multiply_command):
+    assert multiply_command.execute("5") == "Error: 'multiply' requires exactly two arguments"
+
+def test_divide_command_valid(divide_command):
+    assert divide_command.execute("6", "2") == "Result: 3.0"
+
+def test_divide_command_invalid_args(divide_command):
+    assert divide_command.execute("6") == "Error: 'divide' requires exactly two arguments"
+    assert divide_command.execute("6", "0") == "Error: Cannot divide by zero"
