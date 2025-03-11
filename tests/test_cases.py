@@ -11,6 +11,7 @@ from app.commands.arithmetic import (
 )
 from app.history_manager import HistoryManager
 from app.repl import REPL
+from app.commands.history import HistoryCommand, ClearHistoryCommand, DeleteCommand
 
 
 @pytest.fixture(name="repl")
@@ -211,6 +212,73 @@ def test_invalid_load_history(history_manager, tmp_path):
     file_path = tmp_path / "non_existent.csv"
     assert history_manager.load_history(str(file_path)) is False
     
+
+
+class SimpleCalculator:
+    """Minimal calculator class to store and manage history for testing."""
+    
+    def __init__(self):
+        self.history = pd.DataFrame(columns=["expression", "result"])
+
+    def get_history(self):
+        return self.history
+
+    def add_to_history(self, expression, result):
+        """Adds a new calculation to the history."""
+        new_entry = pd.DataFrame([{"expression": expression, "result": result}])
+        self.history = pd.concat([self.history, new_entry], ignore_index=True)
+
+    def clear_history(self):
+        self.history = pd.DataFrame(columns=["expression", "result"])
+
+    class HistoryManager:
+        def __init__(self, calculator):
+            self.calculator = calculator
+
+        def delete_entry(self, index):
+            """Deletes an entry at a given index, returns True if successful."""
+            if 0 <= index < len(self.calculator.history):
+                self.calculator.history.drop(index, inplace=True)
+                self.calculator.history.reset_index(drop=True, inplace=True)
+                return True
+            return False
+
+    @property
+    def history_manager(self):
+        return self.HistoryManager(self)
+
+
+@pytest.fixture
+def simple_calculator():
+    """Fixture to create a new calculator instance for test history commands."""
+    return SimpleCalculator()
+
+
+
+
+
+
+
+def test_delete_command_no_args(simple_calculator):
+    """Test delete command when no index is provided."""
+    cmd = DeleteCommand()
+    cmd.calculator = simple_calculator
+
+    result = cmd.execute()
+    assert result == "Error: Please specify an index to delete"
+
+
+def test_delete_command_invalid_index(simple_calculator):
+    """Test delete command with an invalid index (non-integer)."""
+    cmd = DeleteCommand()
+    cmd.calculator = simple_calculator
+
+    result = cmd.execute("abc")
+    assert result == "Error: Invalid index 'abc'"
+
+
+
+
 @pytest.fixture
 def calculator():
     class MockCalculator:
@@ -280,3 +348,4 @@ def test_divide_command_valid(divide_command):
 def test_divide_command_invalid_args(divide_command):
     assert divide_command.execute("6") == "Error: 'divide' requires exactly two arguments"
     assert divide_command.execute("6", "0") == "Error: Cannot divide by zero"
+
