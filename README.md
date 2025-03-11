@@ -60,7 +60,6 @@ The application allows dynamic configuration through environment variables, impr
 import os
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 LOG_FILE = os.getenv('LOG_FILE', './logs/calculator.log')
-HISTORY_FILE = os.getenv('HISTORY_FILE', 'history.csv')
 ```
 - **Usage Example:**
 ```bash
