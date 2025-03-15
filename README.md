@@ -5,6 +5,10 @@ This is an advanced Python-based calculator application developed for a software
 
 The calculator supports arithmetic operations, calculation history management, a dynamic plugin system, and integrates multiple software design patterns for scalability and flexibility.
 
+## **Video Link**
+[Click here to watch the video overview ](https://drive.google.com/file/d/19gBJ6Scsg1uyEyLNdQF0A28LISJDpnfj/view?usp=drivesdk)
+
+
 ## **Key Features**
 - **Interactive Command-Line Interface (REPL)** for executing calculations in real time.
 - **Arithmetic Operations**: Addition, subtraction, multiplication, and division.
